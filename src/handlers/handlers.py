@@ -214,13 +214,14 @@ def setup_handlers(bot):
             bot.edit_message_text(
                 chat_id=call.message.chat.id,
                 message_id=call.message.message_id,
-                text="🏥� Список отделений переливания крови:\n\n"
-                    "1. ////////////\n"
-                    "2. /////////////\n"
-                    "3. /////////////////////\n\n",
+                text="📞 Контактная информация фонда:\n\n"
+                    "Телефон: //////////////\n"
+                    "Email: ///////////////\n"
+                    "Адрес: //////////////////\n"
+                    "Сайт: ///////////////////",
                 reply_markup=markup,
             )
-            bot.answer_callback_query(call.id)
+            bot.answer_callback_query(call.id) 
 
         elif call.data == "option4":
             show_questions_menu(call.message)
