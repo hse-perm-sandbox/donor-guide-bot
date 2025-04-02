@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     в файле .env в корне проекта или через переменные окружения."""
 
     LOG_LEVEL: str = "WARNING"
-    TELEGRAM_TOKEN: str = "your_token"
+    TELEGRAM_TOKEN: str = "your_toke"
     RESEND_CHAT_ID: int =  0
 
     model_config = SettingsConfigDict(
