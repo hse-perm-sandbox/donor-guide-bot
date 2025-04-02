@@ -27,15 +27,19 @@ def setup_handlers(bot):
 
     @bot.message_handler(content_types=["text"])
     def text_messages(message):
+
         if message.text == "Ответы на часто задаваемые вопросы":
             show_questions_menu(message)
+
         elif message.text == "Написать свой вопрос":
             bot.send_message(message.chat.id, "Пожалуйста, напишите ваш вопрос.")
+
         elif message.text == "Пожертвовать в фонд":
             bot.send_message(
                 message.chat.id,
                 "Спасибо за ваше желание помочь! Пожалуйста, перейдите по следующей ссылке для пожертвования: [ссылка].",
             )
+
         else:
             bot.send_message(
                 settings.RESEND_CHAT_ID,
@@ -47,150 +51,177 @@ def setup_handlers(bot):
 
     def show_questions_menu(message):
         keyboard = types.InlineKeyboardMarkup()
+
         question_one = types.InlineKeyboardButton(
-            text="Вопрос 1", callback_data="question_1"
+            text="🧬 Донорство костного мозга", callback_data="question_1"
         )
+
         question_two = types.InlineKeyboardButton(
-            text="Вопрос 2", callback_data="question_2"
+            text="🩸 Донорство крови", callback_data="question_2"
         )
+
         question_three = types.InlineKeyboardButton(
-            text="Вопрос 3", callback_data="question_3"
+            text="📞 Контакты фонда", callback_data="question_3"
         )
-        question_four = types.InlineKeyboardButton(
-            text="Вопрос 4", callback_data="question_4"
-        )
-        question_five = types.InlineKeyboardButton(
-            text="Вопрос 5", callback_data="question_5"
-        )
-        question_six = types.InlineKeyboardButton(
-            text="Вопрос 6", callback_data="question_6"
-        )
-        back_button = types.InlineKeyboardButton(
-            text="Вернуться назад", callback_data="back_to_main"
-        )
+        
 
-        keyboard.add(
-            question_one,
-            question_two,
-            question_three,
-            question_four,
-            question_five,
-            question_six,
-            back_button,
-        )
+        keyboard.row(question_one)
+        keyboard.row(question_two)
+        keyboard.row(question_three)
 
-        bot.send_message(message.chat.id, "Выберите вопрос:", reply_markup=keyboard)
+        bot.send_message(message.chat.id, "Главное меню:", reply_markup=keyboard)
 
     @bot.callback_query_handler(func=lambda call: True)
     def callback_query(call):
+
         if call.data == "question_1":
             markup = types.InlineKeyboardMarkup()
+
             btn1 = types.InlineKeyboardButton(
                 "Вопрос 1 по теме", callback_data="option1"
             )
+
             btn2 = types.InlineKeyboardButton(
                 "Вопрос 2 по теме", callback_data="option2"
             )
+
             back = types.InlineKeyboardButton("Назад", callback_data="option3")
-            markup.add(btn1, btn2, back)
+
+            markup.add(btn1)
+            markup.add(btn2)
+            markup.add(back)
 
             bot.edit_message_text(
                 chat_id=call.message.chat.id,
                 message_id=call.message.message_id,
-                text="Вопрос 1:",
+                text="🧬 Донорство костного мозга:",
                 reply_markup=markup,
             )
             bot.answer_callback_query(call.id)
+
+        elif call.data == "option3":
+            show_questions_menu(call.message)
+            bot.answer_callback_query(call.id)
+
+
+
+
+
         elif call.data == "question_2":
             markup = types.InlineKeyboardMarkup()
+
             btn1 = types.InlineKeyboardButton(
                 "Вопрос 1 по теме", callback_data="option1"
             )
+
             btn2 = types.InlineKeyboardButton(
                 "Вопрос 2 по теме", callback_data="option2"
             )
+
             back = types.InlineKeyboardButton("Назад", callback_data="option3")
-            markup.add(btn1, btn2, back)
+
+            markup.add(btn1)
+            markup.add(btn2)
+            markup.add(back)
 
             bot.edit_message_text(
                 chat_id=call.message.chat.id,
                 message_id=call.message.message_id,
-                text="Вопрос 2:",
+                text="🩸 Донорство крови:",
                 reply_markup=markup,
             )
             bot.answer_callback_query(call.id)
-        elif call.data == "question_3":
-            markup = types.InlineKeyboardMarkup()
-            btn1 = types.InlineKeyboardButton(
-                "Вопрос 1 по теме", callback_data="option1"
-            )
-            btn2 = types.InlineKeyboardButton(
-                "Вопрос 2 по теме", callback_data="option2"
-            )
-            back = types.InlineKeyboardButton("Назад", callback_data="option3")
-            markup.add(btn1, btn2, back)
-
-            bot.edit_message_text(
-                chat_id=call.message.chat.id,
-                message_id=call.message.message_id,
-                text="Вопрос 3:",
-                reply_markup=markup,
-            )
-            bot.answer_callback_query(call.id)
-        elif call.data == "question_4":
-            markup = types.InlineKeyboardMarkup()
-            btn1 = types.InlineKeyboardButton(
-                "Вопрос 1 по теме", callback_data="option1"
-            )
-            btn2 = types.InlineKeyboardButton(
-                "Вопрос 2 по теме", callback_data="option2"
-            )
-            back = types.InlineKeyboardButton("Назад", callback_data="option3")
-            markup.add(btn1, btn2, back)
-
-            bot.edit_message_text(
-                chat_id=call.message.chat.id,
-                message_id=call.message.message_id,
-                text="Вопрос 4:",
-                reply_markup=markup,
-            )
-            bot.answer_callback_query(call.id)
-        elif call.data == "question_5":
-            markup = types.InlineKeyboardMarkup()
-            btn1 = types.InlineKeyboardButton(
-                "Вопрос 1 по теме", callback_data="option1"
-            )
-            btn2 = types.InlineKeyboardButton(
-                "Вопрос 2 по теме", callback_data="option2"
-            )
-            back = types.InlineKeyboardButton("Назад", callback_data="option3")
-            markup.add(btn1, btn2, back)
-
-            bot.edit_message_text(
-                chat_id=call.message.chat.id,
-                message_id=call.message.message_id,
-                text="Вопрос 5:",
-                reply_markup=markup,
-            )
-            bot.answer_callback_query(call.id)
-        elif call.data == "question_6":
-            markup = types.InlineKeyboardMarkup()
-            btn1 = types.InlineKeyboardButton(
-                "Вопрос 1 по теме", callback_data="option1"
-            )
-            btn2 = types.InlineKeyboardButton(
-                "Вопрос 2 по теме", callback_data="option2"
-            )
-            back = types.InlineKeyboardButton("Назад", callback_data="option3")
-            markup.add(btn1, btn2, back)
-
-            bot.edit_message_text(
-                chat_id=call.message.chat.id,
-                message_id=call.message.message_id,
-                text="Вопрос 6:",
-                reply_markup=markup,
-            )
-            bot.answer_callback_query(call.id)
+        
         elif call.data == "option3":
+            show_questions_menu(call.message)
+            bot.answer_callback_query(call.id)
+
+
+
+
+
+        elif call.data == "question_3":
+
+            markup = types.InlineKeyboardMarkup()
+            btn1 = types.InlineKeyboardButton(
+                "Где сдавать кровь в Петербурге ", callback_data="option1"
+            )
+
+            btn2 = types.InlineKeyboardButton(
+                "Список отделений переливания крови", callback_data="option2"
+            )
+
+            btn3 = types.InlineKeyboardButton(
+                "Контакты и телефон фонда", callback_data="option3"
+            )
+
+            back = types.InlineKeyboardButton("Назад", callback_data="option4")
+
+            markup.add(btn1)
+            markup.add(btn2)
+            markup.add(btn3)
+            markup.add(back)
+
+            bot.edit_message_text(
+                chat_id=call.message.chat.id,
+                message_id=call.message.message_id,
+                text="📞 Контакты фонда:",
+                reply_markup=markup,
+            )
+            bot.answer_callback_query(call.id)
+
+
+
+
+        elif call.data == "option1":
+            markup = types.InlineKeyboardMarkup()
+            back = types.InlineKeyboardButton("Назад", callback_data="question_3")
+            markup.add(back)
+    
+            bot.edit_message_text(
+                chat_id=call.message.chat.id,
+                message_id=call.message.message_id,
+                text="🏥 Вот где можно сдавать кровь в Петербурге:\n\n"
+                "1. ///////////////////\n"
+                "2. ///////////////////\n"
+                "3. ///////////////////////\n"
+                "4. /////////////////////////",
+                reply_markup=markup,
+            )
+            bot.answer_callback_query(call.id)
+
+        elif call.data == "option2":
+            markup = types.InlineKeyboardMarkup()
+            back = types.InlineKeyboardButton("Назад", callback_data="question_3")
+            markup.add(back)
+            
+            bot.edit_message_text(
+                chat_id=call.message.chat.id,
+                message_id=call.message.message_id,
+                text="🏥� Список отделений переливания крови:\n\n"
+                    "1. ////////////\n"
+                    "2. /////////////\n"
+                    "3. /////////////////////\n\n",
+                reply_markup=markup,
+            )
+            bot.answer_callback_query(call.id)
+
+        elif call.data == "option3":
+            markup = types.InlineKeyboardMarkup()
+            back = types.InlineKeyboardButton("Назад", callback_data="question_3")
+            markup.add(back)
+            
+            bot.edit_message_text(
+                chat_id=call.message.chat.id,
+                message_id=call.message.message_id,
+                text="🏥� Список отделений переливания крови:\n\n"
+                    "1. ////////////\n"
+                    "2. /////////////\n"
+                    "3. /////////////////////\n\n",
+                reply_markup=markup,
+            )
+            bot.answer_callback_query(call.id)
+
+        elif call.data == "option4":
             show_questions_menu(call.message)
             bot.answer_callback_query(call.id)
