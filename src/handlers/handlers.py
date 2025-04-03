@@ -144,18 +144,18 @@ def setup_handlers(bot):
 
             markup = types.InlineKeyboardMarkup()
             btn1 = types.InlineKeyboardButton(
-                "Где сдавать кровь в Петербурге ", callback_data="option1"
+                "Где сдавать кровь в Петербурге ", callback_data="option_1"
             )
 
             btn2 = types.InlineKeyboardButton(
-                "Список отделений переливания крови", callback_data="option2"
+                "Список отделений переливания крови", callback_data="option_2"
             )
 
             btn3 = types.InlineKeyboardButton(
-                "Контакты и телефон фонда", callback_data="option3"
+                "Контакты и телефон фонда", callback_data="option_3"
             )
 
-            back = types.InlineKeyboardButton("Назад", callback_data="option4")
+            back = types.InlineKeyboardButton("Назад", callback_data="option_4")
 
             markup.add(btn1)
             markup.add(btn2)
@@ -173,7 +173,7 @@ def setup_handlers(bot):
 
 
 
-        elif call.data == "option1":
+        elif call.data == "option_1":
             markup = types.InlineKeyboardMarkup()
             back = types.InlineKeyboardButton("Назад", callback_data="question_3")
             markup.add(back)
@@ -190,7 +190,7 @@ def setup_handlers(bot):
             )
             bot.answer_callback_query(call.id)
 
-        elif call.data == "option2":
+        elif call.data == "option_2":
             markup = types.InlineKeyboardMarkup()
             back = types.InlineKeyboardButton("Назад", callback_data="question_3")
             markup.add(back)
@@ -206,7 +206,7 @@ def setup_handlers(bot):
             )
             bot.answer_callback_query(call.id)
 
-        elif call.data == "option3":
+        elif call.data == "option_3":
             markup = types.InlineKeyboardMarkup()
             back = types.InlineKeyboardButton("Назад", callback_data="question_3")
             markup.add(back)
@@ -223,6 +223,6 @@ def setup_handlers(bot):
             )
             bot.answer_callback_query(call.id) 
 
-        elif call.data == "option4":
+        elif call.data == "option_4":
             show_questions_menu(call.message)
             bot.answer_callback_query(call.id)
