@@ -32,7 +32,13 @@ def setup_handlers(bot):
             show_questions_menu(message)
 
         elif message.text == "Написать свой вопрос":
-            bot.send_message(message.chat.id, "Пожалуйста, напишите ваш вопрос.")
+
+            msg = bot.send_message(
+                message.chat.id, 
+                "📝 Пожалуйста, напишите ваш вопрос. (Отправьте одним сообщением)"
+            )
+
+            bot.register_next_step_handler(msg, process_user_question)
 
         elif message.text == "Пожертвовать в фонд":
             bot.send_message(
@@ -42,12 +48,21 @@ def setup_handlers(bot):
 
         else:
             bot.send_message(
-                settings.RESEND_CHAT_ID,
-                f"Вопрос от {message.from_user.first_name} (@{message.from_user.username}): {message.text}",
-            )
-            bot.send_message(
-                message.chat.id, "Ваш вопрос был отправлен. Мы свяжемся с вами позже."
-            )
+                message.chat.id,
+                "ℹ️ Пожалуйста, воспользуйтесь кнопками меню.",
+                reply_markup=markup,
+        )
+
+    def process_user_question(message):
+        bot.send_message(
+            settings.RESEND_CHAT_ID,
+            f"❓ Вопрос от {message.from_user.first_name} (@{message.from_user.username}):\n{message.text}"
+        )
+        bot.send_message(
+            message.chat.id,
+            "✅ Ваш вопрос был отправлен в фонд. Мы свяжемся с вами в ближайшее время.",
+            reply_markup=markup,
+        )
 
     def show_questions_menu(message):
         keyboard = types.InlineKeyboardMarkup()
