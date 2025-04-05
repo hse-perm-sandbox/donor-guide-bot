@@ -51,7 +51,7 @@ def setup_handlers(bot):
                 message.chat.id,
                 "ℹ️ Пожалуйста, воспользуйтесь кнопками меню.",
                 reply_markup=markup,
-        )
+            )
 
     def process_user_question(message):
         bot.send_message(
