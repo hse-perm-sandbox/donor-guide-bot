@@ -1,5 +1,4 @@
 from telebot import types
-
 from src.config import Settings
 
 
@@ -13,6 +12,8 @@ def setup_handlers(bot):
     markup.add(questions_button)
     markup.add(special_question_button)
     markup.add(donate_button)
+
+    user_data = {}
 
     @bot.message_handler(commands=["start"])
     def start_message(message):
@@ -38,7 +39,8 @@ def setup_handlers(bot):
                 "📝 Пожалуйста, напишите ваш вопрос. (Отправьте одним сообщением)"
             )
 
-            bot.register_next_step_handler(msg, process_user_question)
+            bot.register_next_step_handler(msg, process_question_text)
+            user_data[message.chat.id] = {"state": "awaiting_question"}
 
         elif message.text == "Пожертвовать в фонд":
             bot.send_message(
@@ -53,16 +55,47 @@ def setup_handlers(bot):
                 reply_markup=markup,
             )
 
-    def process_user_question(message):
-        bot.send_message(
-            settings.RESEND_CHAT_ID,
-            f"❓ Вопрос от {message.from_user.first_name} (@{message.from_user.username}):\n{message.text}"
+    def process_question_text(message):
+        user_data[message.chat.id]["question"] = message.text
+        msg = bot.send_message(
+            message.chat.id,
+            "📧 Теперь укажите ваш email для обратной связи:"
         )
+        bot.register_next_step_handler(msg, process_email)
+
+    def process_email(message):
+        if "@" not in message.text or "." not in message.text:
+            msg = bot.send_message(
+                message.chat.id,
+                "❌ Это не похоже на email. Пожалуйста, введите корректный адрес:"
+            )
+            bot.register_next_step_handler(msg, process_email)
+            return
+
+        user_data[message.chat.id]["email"] = message.text
+        send_question_to_fund(message.chat.id)
+        
         bot.send_message(
             message.chat.id,
-            "✅ Ваш вопрос был отправлен в фонд. Мы свяжемся с вами в ближайшее время.",
-            reply_markup=markup,
+            "✅ Ваш вопрос и контакты отправлены в фонд. Спасибо!",
+            reply_markup=markup
         )
+
+    def send_question_to_fund(chat_id):
+        data = user_data.get(chat_id, {})
+        question = data.get("question", "Не указан")
+        email = data.get("email", "Не указан")
+        user = bot.get_chat(chat_id)
+
+        bot.send_message(
+            settings.RESEND_CHAT_ID,
+            f"❓ Новый вопрос от пользователя:\n"
+            f"Имя: {user.first_name}\n"
+            f"Username: @{user.username}\n"
+            f"Email: {email}\n\n"
+            f"Вопрос: {question}"
+        )
+
 
     def show_questions_menu(message):
         keyboard = types.InlineKeyboardMarkup()
