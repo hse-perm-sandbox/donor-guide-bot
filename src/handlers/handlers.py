@@ -78,17 +78,27 @@ def setup_handlers(bot):
             markup = types.InlineKeyboardMarkup()
 
             btn1 = types.InlineKeyboardButton(
-                "Вопрос 1 по теме", callback_data="bone_marrow_option_1"
+                "Что нужно знать", callback_data="bone_marrow_option_1"
             )
 
             btn2 = types.InlineKeyboardButton(
-                "Вопрос 2 по теме", callback_data="bone_marrow_option_2"
+                "Как стать донором", callback_data="bone_marrow_option_2"
             )
 
-            back = types.InlineKeyboardButton("Назад", callback_data="bone_marrow_option_3")
+            btn3 = types.InlineKeyboardButton(
+                "Как проходит донация", callback_data="bone_marrow_option_3"
+            )
+
+            btn4 = types.InlineKeyboardButton(
+                "Часто задаваемые вопросы", callback_data="bone_marrow_option_4"
+            )
+
+            back = types.InlineKeyboardButton("Назад", callback_data="bone_marrow_option_5")
 
             markup.add(btn1)
             markup.add(btn2)
+            markup.add(btn3)
+            markup.add(btn4)
             markup.add(back)
 
             bot.edit_message_text(
@@ -99,7 +109,113 @@ def setup_handlers(bot):
             )
             bot.answer_callback_query(call.id)
 
+        elif call.data == "bone_marrow_option_1":
+            markup = types.InlineKeyboardMarkup()
+            back = types.InlineKeyboardButton("Назад", callback_data="question_1")
+
+            btn_1 = types.InlineKeyboardButton(
+                "Что такое костный мозг?", callback_data="what_should_you_know_option_1"
+            )
+
+            btn_2 = types.InlineKeyboardButton(
+                "Что такое трансплантация костного мозга?", callback_data="what_should_you_know_option_2"
+            )
+
+            btn_3 = types.InlineKeyboardButton(
+                "Что такое национальный регистр потенциальных доноров?", callback_data="what_should_you_know_option_3"
+            )
+
+            btn_4 = types.InlineKeyboardButton(
+                "Почему важно пополнять российский регистр?", callback_data="what_should_you_know_option_4"
+            )
+
+            markup.add(btn_1)
+            markup.add(btn_2)
+            markup.add(btn_3)
+            markup.add(btn_4)
+            markup.add(back)
+
+            bot.edit_message_text(
+                chat_id=call.message.chat.id,
+                message_id=call.message.message_id,
+                text="Что нужно знать:",
+                reply_markup=markup,
+            )
+            bot.answer_callback_query(call.id)
+
+        elif call.data == "bone_marrow_option_2":
+            markup = types.InlineKeyboardMarkup()
+            back = types.InlineKeyboardButton("Назад", callback_data="question_1")
+
+            btn_1 = types.InlineKeyboardButton(
+                "Кто может стать донором костного мозга?", callback_data="how_to_become_a_donor_option_1"
+            )
+
+            btn_2 = types.InlineKeyboardButton(
+                "Как попасть в федеральный регистр?", callback_data="how_to_become_a_donor_option_2"
+            )
+
+            btn_3 = types.InlineKeyboardButton(
+                "Как ищут донора костного мозга?", callback_data="how_to_become_a_donor_option_3"
+            )
+
+            markup.add(btn_1)
+            markup.add(btn_2)
+            markup.add(btn_3)
+            markup.add(back)
+
+            bot.edit_message_text(
+                chat_id=call.message.chat.id,
+                message_id=call.message.message_id,
+                text="Как стать донором:",
+                reply_markup=markup,
+            )
+            bot.answer_callback_query(call.id)
+
         elif call.data == "bone_marrow_option_3":
+            markup = types.InlineKeyboardMarkup()
+            back = types.InlineKeyboardButton("Назад", callback_data="question_1")
+
+            btn_1 = types.InlineKeyboardButton(
+                "Как происходит забор костного мозга у донора?", callback_data="how_does_donation_work_option_1"
+            )
+
+            btn_2 = types.InlineKeyboardButton(
+                "Нужно ли готовиться к сдаче костного мозга?", callback_data="how_does_donation_work_option_2"
+            )
+
+            markup.add(btn_1)
+            markup.add(btn_2)
+            markup.add(back)
+
+            bot.edit_message_text(
+                chat_id=call.message.chat.id,
+                message_id=call.message.message_id,
+                text="Как проходит донация:",
+                reply_markup=markup,
+            )
+            bot.answer_callback_query(call.id)
+
+        elif call.data == "bone_marrow_option_4":
+            markup = types.InlineKeyboardMarkup()
+            back = types.InlineKeyboardButton("Назад", callback_data="question_1")
+
+            btn_1 = types.InlineKeyboardButton(
+                "Как происходит забор костного мозга у донора?", callback_data="FAQ_option_1"
+            )
+
+            markup.add(btn_1)
+            markup.add(back)
+
+            bot.edit_message_text(
+                chat_id=call.message.chat.id,
+                message_id=call.message.message_id,
+                text="Часто задаваемые вопросы:",
+                reply_markup=markup,
+            )
+            bot.answer_callback_query(call.id)
+
+        elif call.data == "bone_marrow_option_5":
             show_questions_menu(call.message)
             bot.answer_callback_query(call.id)
 
@@ -317,8 +433,6 @@ def setup_handlers(bot):
         elif call.data == "blood_option_7":
             show_questions_menu(call.message)
             bot.answer_callback_query(call.id)
-
-
 
         elif call.data == "question_3":
 
