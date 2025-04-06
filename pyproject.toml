@@ -14,6 +14,9 @@ packages = [
     { include = "src" }
 ]
 
+[virtualenvs]
+in-project = true
+
 [tool.poetry.scripts]
 start = "src.main:start"
 
@@ -21,6 +24,9 @@ start = "src.main:start"
 pydantic = "^2.10.6"
 pydantic-settings = "^2.8.1"
 telebot = "^0.0.5"
+sqlalchemy = "^2.0.40"
+psycopg2-binary = "^2.9.10"
+alembic = "^1.15.2"
 
 
 [tool.poetry.group.dev.dependencies]

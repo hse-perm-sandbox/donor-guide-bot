@@ -1,10 +1,11 @@
 from telebot import types
-from src.config import Settings
+
+from src.config import settings
+from src.database.database import get_session
+from src.database.repositories.user import UserRepository
 
 
 def setup_handlers(bot):
-    settings = Settings()
-
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     questions_button = types.KeyboardButton("Ответы на часто задаваемые вопросы")
     special_question_button = types.KeyboardButton("Написать свой вопрос")
@@ -17,12 +18,9 @@ def setup_handlers(bot):
 
     @bot.message_handler(commands=["start"])
     def start_message(message):
-        print(message.chat.id)
         bot.send_message(
             message.chat.id,
-            text="Привет, {0.first_name} 👋\nВоспользуйся кнопками".format(
-                message.from_user
-            ),
+            text="Привет, {0.first_name} 👋\nВоспользуйся кнопками".format(message.from_user),
             reply_markup=markup,
         )
 
@@ -35,8 +33,7 @@ def setup_handlers(bot):
         elif message.text == "Написать свой вопрос":
 
             msg = bot.send_message(
-                message.chat.id, 
-                "📝 Пожалуйста, напишите ваш вопрос. (Отправьте одним сообщением)"
+                message.chat.id, "📝 Пожалуйста, напишите ваш вопрос. (Отправьте одним сообщением)"
             )
 
             bot.register_next_step_handler(msg, process_question_text)
@@ -57,28 +54,32 @@ def setup_handlers(bot):
 
     def process_question_text(message):
         user_data[message.chat.id]["question"] = message.text
-        msg = bot.send_message(
-            message.chat.id,
-            "📧 Теперь укажите ваш email для обратной связи:"
-        )
+        msg = bot.send_message(message.chat.id, "📧 Теперь укажите ваш email для обратной связи:")
         bot.register_next_step_handler(msg, process_email)
 
     def process_email(message):
         if "@" not in message.text or "." not in message.text:
             msg = bot.send_message(
-                message.chat.id,
-                "❌ Это не похоже на email. Пожалуйста, введите корректный адрес:"
+                message.chat.id, "❌ Это не похоже на email. Пожалуйста, введите корректный адрес:"
             )
             bot.register_next_step_handler(msg, process_email)
             return
 
         user_data[message.chat.id]["email"] = message.text
+
+        repo = UserRepository(next(get_session()))
+        user = repo.create_or_update(
+            telegram_chat_id=message.chat.id,
+            telegram_username=bot.get_chat(message.chat.id).username,
+            email=message.text,
+        )
+
         send_question_to_fund(message.chat.id)
-        
+
         bot.send_message(
             message.chat.id,
             "✅ Ваш вопрос и контакты отправлены в фонд. Спасибо!",
-            reply_markup=markup
+            reply_markup=markup,
         )
 
     def send_question_to_fund(chat_id):
@@ -93,9 +94,8 @@ def setup_handlers(bot):
             f"Имя: {user.first_name}\n"
             f"Username: @{user.username}\n"
             f"Email: {email}\n\n"
-            f"Вопрос: {question}"
+            f"Вопрос: {question}",
         )
-
 
     def show_questions_menu(message):
         keyboard = types.InlineKeyboardMarkup()
@@ -111,7 +111,6 @@ def setup_handlers(bot):
         question_three = types.InlineKeyboardButton(
             text="📞 Контакты фонда", callback_data="question_3"
         )
-        
 
         keyboard.row(question_one)
         keyboard.row(question_two)
@@ -166,15 +165,18 @@ def setup_handlers(bot):
             )
 
             btn_2 = types.InlineKeyboardButton(
-                "Что такое трансплантация костного мозга?", callback_data="what_should_you_know_option_2"
+                "Что такое трансплантация костного мозга?",
+                callback_data="what_should_you_know_option_2",
             )
 
             btn_3 = types.InlineKeyboardButton(
-                "Что такое национальный регистр потенциальных доноров?", callback_data="what_should_you_know_option_3"
+                "Что такое национальный регистр потенциальных доноров?",
+                callback_data="what_should_you_know_option_3",
             )
 
             btn_4 = types.InlineKeyboardButton(
-                "Почему важно пополнять российский регистр?", callback_data="what_should_you_know_option_4"
+                "Почему важно пополнять российский регистр?",
+                callback_data="what_should_you_know_option_4",
             )
 
             markup.add(btn_1)
@@ -196,7 +198,8 @@ def setup_handlers(bot):
             back = types.InlineKeyboardButton("Назад", callback_data="question_1")
 
             btn_1 = types.InlineKeyboardButton(
-                "Кто может стать донором костного мозга?", callback_data="how_to_become_a_donor_option_1"
+                "Кто может стать донором костного мозга?",
+                callback_data="how_to_become_a_donor_option_1",
             )
 
             btn_2 = types.InlineKeyboardButton(
@@ -225,11 +228,13 @@ def setup_handlers(bot):
             back = types.InlineKeyboardButton("Назад", callback_data="question_1")
 
             btn_1 = types.InlineKeyboardButton(
-                "Как происходит забор костного мозга у донора?", callback_data="how_does_donation_work_option_1"
+                "Как происходит забор костного мозга у донора?",
+                callback_data="how_does_donation_work_option_1",
             )
 
             btn_2 = types.InlineKeyboardButton(
-                "Нужно ли готовиться к сдаче костного мозга?", callback_data="how_does_donation_work_option_2"
+                "Нужно ли готовиться к сдаче костного мозга?",
+                callback_data="how_does_donation_work_option_2",
             )
 
             markup.add(btn_1)
@@ -267,32 +272,20 @@ def setup_handlers(bot):
             show_questions_menu(call.message)
             bot.answer_callback_query(call.id)
 
-
-
-
-
         elif call.data == "question_2":
             markup = types.InlineKeyboardMarkup()
 
-            btn1 = types.InlineKeyboardButton(
-                "Как подготовиться", callback_data="blood_option_1"
-            )
+            btn1 = types.InlineKeyboardButton("Как подготовиться", callback_data="blood_option_1")
 
-            btn2 = types.InlineKeyboardButton(
-                "После донации", callback_data="blood_option_2"
-            )
+            btn2 = types.InlineKeyboardButton("После донации", callback_data="blood_option_2")
 
-            btn3 = types.InlineKeyboardButton(
-                "Противопоказания", callback_data="blood_option_3"
-            )
+            btn3 = types.InlineKeyboardButton("Противопоказания", callback_data="blood_option_3")
 
             btn4 = types.InlineKeyboardButton(
                 "Часто задаваемые вопросы", callback_data="blood_option_4"
             )
 
-            btn5 = types.InlineKeyboardButton(
-                "Как это помогает", callback_data="blood_option_5"
-            )
+            btn5 = types.InlineKeyboardButton("Как это помогает", callback_data="blood_option_5")
 
             btn6 = types.InlineKeyboardButton(
                 "Узнать, нужны ли доноры", callback_data="blood_option_6"
@@ -315,7 +308,7 @@ def setup_handlers(bot):
                 reply_markup=markup,
             )
             bot.answer_callback_query(call.id)
-        
+
         elif call.data == "blood_option_1":
             markup = types.InlineKeyboardMarkup()
             back = types.InlineKeyboardButton("Назад", callback_data="question_2")
@@ -349,7 +342,6 @@ def setup_handlers(bot):
                 reply_markup=markup,
             )
             bot.answer_callback_query(call.id)
-            
 
         elif call.data == "blood_option_2":
             markup = types.InlineKeyboardMarkup()
@@ -374,18 +366,19 @@ def setup_handlers(bot):
                 reply_markup=markup,
             )
             bot.answer_callback_query(call.id)
-        
 
         elif call.data == "blood_option_3":
             markup = types.InlineKeyboardMarkup()
             back = types.InlineKeyboardButton("Назад", callback_data="question_2")
 
             btn_1 = types.InlineKeyboardButton(
-                "Показания к донорству крови и компонентов", callback_data="contraindications_option_1"
+                "Показания к донорству крови и компонентов",
+                callback_data="contraindications_option_1",
             )
 
             btn_2 = types.InlineKeyboardButton(
-                "Постоянные медицинские противопоказания", callback_data="contraindications_option_2"
+                "Постоянные медицинские противопоказания",
+                callback_data="contraindications_option_2",
             )
 
             btn_3 = types.InlineKeyboardButton(
@@ -404,12 +397,11 @@ def setup_handlers(bot):
                 reply_markup=markup,
             )
             bot.answer_callback_query(call.id)
-            
-        
+
         elif call.data == "blood_option_4":
             markup = types.InlineKeyboardMarkup()
             back = types.InlineKeyboardButton("Назад", callback_data="question_2")
-    
+
             btn_1 = types.InlineKeyboardButton(
                 "Что делать, если боишься вида крови?", callback_data="FAQ_option_1"
             )
@@ -439,7 +431,7 @@ def setup_handlers(bot):
                 reply_markup=markup,
             )
             bot.answer_callback_query(call.id)
-        
+
         elif call.data == "blood_option_5":
             markup = types.InlineKeyboardMarkup()
             back = types.InlineKeyboardButton("Назад", callback_data="question_2")
@@ -458,14 +450,14 @@ def setup_handlers(bot):
                 reply_markup=markup,
             )
             bot.answer_callback_query(call.id)
-            
-        
+
         elif call.data == "blood_option_6":
             markup = types.InlineKeyboardMarkup()
             back = types.InlineKeyboardButton("Назад", callback_data="question_2")
 
             btn_1 = types.InlineKeyboardButton(
-                "Как узнать, нужны ли сейчас доноры крови?", callback_data="how_do_you_know_option_1"
+                "Как узнать, нужны ли сейчас доноры крови?",
+                callback_data="how_do_you_know_option_1",
             )
 
             markup.add(btn_1)
@@ -512,14 +504,11 @@ def setup_handlers(bot):
             )
             bot.answer_callback_query(call.id)
 
-
-
-
         elif call.data == "contacts_option_1":
             markup = types.InlineKeyboardMarkup()
             back = types.InlineKeyboardButton("Назад", callback_data="question_3")
             markup.add(back)
-    
+
             bot.edit_message_text(
                 chat_id=call.message.chat.id,
                 message_id=call.message.message_id,
@@ -536,14 +525,14 @@ def setup_handlers(bot):
             markup = types.InlineKeyboardMarkup()
             back = types.InlineKeyboardButton("Назад", callback_data="question_3")
             markup.add(back)
-            
+
             bot.edit_message_text(
                 chat_id=call.message.chat.id,
                 message_id=call.message.message_id,
                 text="🏥� Список отделений переливания крови:\n\n"
-                    "1. ////////////\n"
-                    "2. /////////////\n"
-                    "3. /////////////////////\n\n",
+                "1. ////////////\n"
+                "2. /////////////\n"
+                "3. /////////////////////\n\n",
                 reply_markup=markup,
             )
             bot.answer_callback_query(call.id)
@@ -552,18 +541,18 @@ def setup_handlers(bot):
             markup = types.InlineKeyboardMarkup()
             back = types.InlineKeyboardButton("Назад", callback_data="question_3")
             markup.add(back)
-            
+
             bot.edit_message_text(
                 chat_id=call.message.chat.id,
                 message_id=call.message.message_id,
                 text="📞 Контактная информация фонда:\n\n"
-                    "Телефон: //////////////\n"
-                    "Email: ///////////////\n"
-                    "Адрес: //////////////////\n"
-                    "Сайт: ///////////////////",
+                "Телефон: //////////////\n"
+                "Email: ///////////////\n"
+                "Адрес: //////////////////\n"
+                "Сайт: ///////////////////",
                 reply_markup=markup,
             )
-            bot.answer_callback_query(call.id) 
+            bot.answer_callback_query(call.id)
 
         elif call.data == "contacts_option_4":
             show_questions_menu(call.message)
