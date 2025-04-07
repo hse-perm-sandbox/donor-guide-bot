@@ -97,7 +97,7 @@ def setup_handlers(bot):
         )
 
 
-    def show_questions_menu(message):
+    def show_questions_menu(message_or_call):
         keyboard = types.InlineKeyboardMarkup()
 
         question_one = types.InlineKeyboardButton(
@@ -112,12 +112,22 @@ def setup_handlers(bot):
             text="📞 Контакты фонда", callback_data="question_3"
         )
         
-
         keyboard.row(question_one)
         keyboard.row(question_two)
         keyboard.row(question_three)
 
-        bot.send_message(message.chat.id, "Главное меню:", reply_markup=keyboard)
+        # Проверяем, пришло ли сообщение или callback
+        if isinstance(message_or_call, types.Message):
+            # Если это сообщение (первый вызов)
+            bot.send_message(message_or_call.chat.id, "Главное меню:", reply_markup=keyboard)
+        else:
+            # Если это callback (нажатие кнопки "Назад")
+            bot.edit_message_text(
+                chat_id=message_or_call.message.chat.id,
+                message_id=message_or_call.message.message_id,
+                text="Главное меню:",
+                reply_markup=keyboard
+            )
 
     @bot.callback_query_handler(func=lambda call: True)
     def callback_query(call):
@@ -264,7 +274,7 @@ def setup_handlers(bot):
             bot.answer_callback_query(call.id)
 
         elif call.data == "bone_marrow_option_5":
-            show_questions_menu(call.message)
+            show_questions_menu(call)
             bot.answer_callback_query(call.id)
 
 
@@ -479,7 +489,7 @@ def setup_handlers(bot):
             )
 
         elif call.data == "blood_option_7":
-            show_questions_menu(call.message)
+            show_questions_menu(call)
             bot.answer_callback_query(call.id)
 
         elif call.data == "question_3":
@@ -566,5 +576,5 @@ def setup_handlers(bot):
             bot.answer_callback_query(call.id) 
 
         elif call.data == "contacts_option_4":
-            show_questions_menu(call.message)
+            show_questions_menu(call)
             bot.answer_callback_query(call.id)
