@@ -1,11 +1,16 @@
+import logging
 from telebot import types
 
 from src.config import settings
 from src.database.database import get_session
 from src.database.repositories.user import UserRepository
+from src.database.repositories.user_question import UserQuestionRepository
+from src.schemas.user import UserBase
+from src.schemas.user_question import UserQuestionBase
 
 
 def setup_handlers(bot):
+    logger = logging.getLogger(__name__)
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     questions_button = types.KeyboardButton("Ответы на часто задаваемые вопросы")
     special_question_button = types.KeyboardButton("Написать свой вопрос")
@@ -69,12 +74,27 @@ def setup_handlers(bot):
 
         repo = UserRepository(next(get_session()))
         user = repo.create_or_update(
-            telegram_chat_id=message.chat.id,
-            telegram_username=bot.get_chat(message.chat.id).username,
-            email=message.text,
+            UserBase.model_construct(
+                telegram_chat_id=message.chat.id,
+                telegram_username=bot.get_chat(message.chat.id).username,
+                email=message.text,
+            )
         )
 
-        send_question_to_fund(message.chat.id)
+        sent = True
+        try:
+            send_question_to_fund(message.chat.id)
+        except Exception as error:
+            logger.error(error)
+            sent = False
+        repo = UserQuestionRepository(next(get_session()))
+        repo.create(
+            UserQuestionBase.model_construct(
+                question_text=user_data[message.chat.id]["question"],
+                sent=sent,
+                user_id=user.id,
+            )
+        )
 
         bot.send_message(
             message.chat.id,
