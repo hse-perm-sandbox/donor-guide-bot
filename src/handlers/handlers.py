@@ -5,8 +5,12 @@ from src.config import settings
 from src.database.database import get_session
 from src.database.repositories.user import UserRepository
 from src.database.repositories.user_question import UserQuestionRepository
+from src.database.repositories.question import QuestionRepository
+from src.database.repositories.folder import FolderRepository
 from src.schemas.user import UserBase
 from src.schemas.user_question import UserQuestionBase
+from src.schemas.question import QuestionBase
+from src.schemas.folder import FolderBase
 
 
 def setup_handlers(bot):

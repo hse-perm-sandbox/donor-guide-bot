@@ -8,6 +8,8 @@ from src.config import settings
 from src.database.models.base import BaseModel
 from src.database.models.user import User
 from src.database.models.user_question import UserQuestion
+from src.database.models.question import Question
+from src.database.models.folder import Folder
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
