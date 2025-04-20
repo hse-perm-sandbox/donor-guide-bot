@@ -1,29 +1,12 @@
-import logging
 from telebot import types
+from .user_questions import register_user_question_handlers
+from src.handlers.keyboards import get_main_menu
 
-from src.config import settings
-from src.database.database import get_session
-from src.database.repositories.user import UserRepository
-from src.database.repositories.user_question import UserQuestionRepository
-from src.database.repositories.question import QuestionRepository
-from src.database.repositories.folder import FolderRepository
-from src.schemas.user import UserBase
-from src.schemas.user_question import UserQuestionBase
-from src.schemas.question import QuestionBase
-from src.schemas.folder import FolderBase
 
 
 def setup_handlers(bot):
-    logger = logging.getLogger(__name__)
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    questions_button = types.KeyboardButton("Ответы на часто задаваемые вопросы")
-    special_question_button = types.KeyboardButton("Написать свой вопрос")
-    donate_button = types.KeyboardButton("Пожертвовать в фонд")
-    markup.add(questions_button)
-    markup.add(special_question_button)
-    markup.add(donate_button)
-
-    user_data = {}
+    markup = get_main_menu()
+    register_user_question_handlers(bot)
 
     @bot.message_handler(commands=["start"])
     def start_message(message):
@@ -39,14 +22,6 @@ def setup_handlers(bot):
         if message.text == "Ответы на часто задаваемые вопросы":
             show_questions_menu(message)
 
-        elif message.text == "Написать свой вопрос":
-
-            msg = bot.send_message(
-                message.chat.id, "📝 Пожалуйста, напишите ваш вопрос. (Отправьте одним сообщением)"
-            )
-
-            bot.register_next_step_handler(msg, process_question_text)
-            user_data[message.chat.id] = {"state": "awaiting_question"}
 
         elif message.text == "Пожертвовать в фонд":
             bot.send_message(
@@ -61,65 +36,6 @@ def setup_handlers(bot):
                 reply_markup=markup,
             )
 
-    def process_question_text(message):
-        user_data[message.chat.id]["question"] = message.text
-        msg = bot.send_message(message.chat.id, "📧 Теперь укажите ваш email для обратной связи:")
-        bot.register_next_step_handler(msg, process_email)
-
-    def process_email(message):
-        if "@" not in message.text or "." not in message.text:
-            msg = bot.send_message(
-                message.chat.id, "❌ Это не похоже на email. Пожалуйста, введите корректный адрес:"
-            )
-            bot.register_next_step_handler(msg, process_email)
-            return
-
-        user_data[message.chat.id]["email"] = message.text
-
-        repo = UserRepository(next(get_session()))
-        user = repo.create_or_update(
-            UserBase.model_construct(
-                telegram_chat_id=message.chat.id,
-                telegram_username=bot.get_chat(message.chat.id).username,
-                email=message.text,
-            )
-        )
-
-        sent = True
-        try:
-            send_question_to_fund(message.chat.id)
-        except Exception as error:
-            logger.error(error)
-            sent = False
-        repo = UserQuestionRepository(next(get_session()))
-        repo.create(
-            UserQuestionBase.model_construct(
-                question_text=user_data[message.chat.id]["question"],
-                sent=sent,
-                user_id=user.id,
-            )
-        )
-
-        bot.send_message(
-            message.chat.id,
-            "✅ Ваш вопрос и контакты отправлены в фонд. Спасибо!",
-            reply_markup=markup,
-        )
-
-    def send_question_to_fund(chat_id):
-        data = user_data.get(chat_id, {})
-        question = data.get("question", "Не указан")
-        email = data.get("email", "Не указан")
-        user = bot.get_chat(chat_id)
-
-        bot.send_message(
-            settings.RESEND_CHAT_ID,
-            f"❓ Новый вопрос от пользователя:\n"
-            f"Имя: {user.first_name}\n"
-            f"Username: @{user.username}\n"
-            f"Email: {email}\n\n"
-            f"Вопрос: {question}",
-        )
 
     def show_questions_menu(message_or_call):
         keyboard = types.InlineKeyboardMarkup()
@@ -152,6 +68,8 @@ def setup_handlers(bot):
                 text="Главное меню:",
                 reply_markup=keyboard,
             )
+
+
 
     @bot.callback_query_handler(func=lambda call: True)
     def callback_query(call):
