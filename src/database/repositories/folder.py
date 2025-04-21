@@ -1,8 +1,11 @@
+from datetime import datetime
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from src.database.models.folder import Folder
+from src.database.models.question import Question
 from src.database.repositories.base import BaseRepository
-from src.schemas.folder import FolderBase, FolderDto
+from src.schemas.folder import FolderBase, FolderDto, FolderWithContentDto
 
 
 class FolderRepository(BaseRepository[Folder]):
@@ -18,3 +21,51 @@ class FolderRepository(BaseRepository[Folder]):
         self.db.commit()
         self.db.refresh(folder)
         return FolderDto.model_validate(folder)
+
+    def get_folder_with_content(self, folder_id: int) -> FolderWithContentDto:
+        """Получить каталог с активными подкаталогами и вопросами"""
+        folder = (
+            self.db.query(Folder)
+            .options(
+                joinedload(Folder.subfolders),
+                joinedload(Folder.questions),
+            )
+            .filter(and_(Folder.id == folder_id, Folder.is_active == True))
+            .first()
+        )
+
+        folder.subfolders = [sf for sf in folder.subfolders if sf.is_active]
+        folder.questions = [q for q in folder.questions if q.is_active]
+
+        return FolderDto.model_validate(folder)
+
+    def get_root_folder_with_content(self) -> FolderWithContentDto:
+        """
+        Получает виртуальный корневой каталог, содержащий:
+        - все каталоги без parent_id (is_active=True)
+        - все вопросы без folder_id (is_active=True)
+        """
+        root_folders = (
+            self.db.query(Folder)
+            .filter(and_(Folder.parent_id.is_(None), Folder.is_active == True))
+            .all()
+        )
+
+        root_questions = (
+            self.db.query(Question)
+            .filter(and_(Question.folder_id.is_(None), Question.is_active == True))
+            .all()
+        )
+
+        return FolderWithContentDto.model_validate(
+            {
+                "id": 0,
+                "folder_name": "Root",
+                "parent_id": None,
+                "is_active": True,
+                "created_at": datetime.now(),
+                "updated_at": datetime.now(),
+                "subfolders": root_folders,
+                "questions": root_questions,
+            }
+        )
