@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, Boolean
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.database.models.base import BaseModel
