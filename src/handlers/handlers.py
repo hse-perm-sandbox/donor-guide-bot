@@ -1,7 +1,9 @@
 from telebot import types
-from .user_questions import register_user_question_handlers
-from src.handlers.keyboards import get_main_menu
 
+from src.database.database import get_session
+from src.database.repositories.folder import FolderRepository
+from .user_questions import register_user_question_handlers
+from src.handlers.keyboards import get_inline_keyboard_for_folder, get_main_menu
 
 
 def setup_handlers(bot):
@@ -20,8 +22,21 @@ def setup_handlers(bot):
     def text_messages(message):
 
         if message.text == "Ответы на часто задаваемые вопросы":
-            show_questions_menu(message)
-
+            folder_repo = FolderRepository(next(get_session()))
+            root_folder = folder_repo.get_root_folder_with_content()
+            keyboard = get_inline_keyboard_for_folder(root_folder)
+            # Проверяем, пришло ли сообщение или callback
+            if isinstance(message, types.Message):
+                # Если это сообщение (первый вызов)
+                bot.send_message(message.chat.id, "Главное меню:", reply_markup=keyboard)
+            else:
+                # Если это callback (нажатие кнопки "Назад")
+                bot.edit_message_text(
+                    chat_id=message.message.chat.id,
+                    message_id=message.message.message_id,
+                    text="Главное меню:",
+                    reply_markup=keyboard,
+                )
 
         elif message.text == "Пожертвовать в фонд":
             bot.send_message(
@@ -35,7 +50,6 @@ def setup_handlers(bot):
                 "ℹ️ Пожалуйста, воспользуйтесь кнопками меню.",
                 reply_markup=markup,
             )
-
 
     def show_questions_menu(message_or_call):
         keyboard = types.InlineKeyboardMarkup()
@@ -68,8 +82,6 @@ def setup_handlers(bot):
                 text="Главное меню:",
                 reply_markup=keyboard,
             )
-
-
 
     @bot.callback_query_handler(func=lambda call: True)
     def callback_query(call):
