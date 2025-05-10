@@ -198,3 +198,11 @@ docker compose -f docker-compose.local.yml down -v
     * Создайте миграцию (revision --autogenerate).
     * Проверьте сгенерированный код в migrations/versions/...py.
     * Примените изменения (upgrade head).
+
+
+## Инициализация базы данных
+
+Выполните команду:
+
+```bash
+python -m src.database.seeds.initial_data

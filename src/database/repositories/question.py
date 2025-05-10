@@ -9,6 +9,17 @@ class QuestionRepository(BaseRepository[Question]):
     def __init__(self, db: Session):
         super().__init__(Question, db)
 
+    def get_by_folder(self, folder_id: int):
+        return (
+            self.db.query(self.model)
+            .filter(self.model.folder_id == folder_id, self.model.is_active == True)
+            .order_by(self.model.id)
+            .all()
+        )
+
+    def get_by_id(self, question_id: int):
+        return self.db.query(self.model).get(question_id)
+
     def get_active_by_folder(self, folder_id: int) -> list[Question]:
         return (
             self.db.query(self.model)

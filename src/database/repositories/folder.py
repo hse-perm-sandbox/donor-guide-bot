@@ -12,6 +12,17 @@ class FolderRepository(BaseRepository[Folder]):
     def __init__(self, db: Session):
         super().__init__(Folder, db)
 
+    def get_by_parent(self, parent_id: int | None):
+        return (
+            self.db.query(self.model)
+            .filter(self.model.parent_id == parent_id)
+            .order_by(self.model.id)
+            .all()
+        )
+
+    def get_by_id(self, folder_id: int):
+        return self.db.query(self.model).get(folder_id)
+
     def get_by_name(self, folder_name: str) -> Folder | None:
         return self.db.query(self.model).filter(self.model.folder_name == folder_name).first()
 
