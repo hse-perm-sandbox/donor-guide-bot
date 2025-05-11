@@ -202,7 +202,8 @@ docker compose -f docker-compose.local.yml down -v
 
 ## Инициализация базы данных
 
-Выполните команду:
+Для заполнения базы данных вопросами и ответами о донорстве крови выполните команду:
 
 ```bash
 python -m src.database.seeds.initial_data
+```
