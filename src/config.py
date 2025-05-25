@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     POSTGRES_USER: str = "postgres"
     POSTGRES_PASSWORD: str = "postgres"
     POSTGRES_DB: str = "postgres"
+    METRIC_COUNTER_ID: str | None = None
 
     @property
     def DATABASE_URL(self) -> str:
