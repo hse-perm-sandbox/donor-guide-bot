@@ -32,7 +32,7 @@ def seed_questions():
             question=item["question"],
             answer_text=item["answer"],
             folder_id=folder_id,
-            answer_picture_path=None,
+            answer_picture_path = item.get("picture_name") or None,
             answer_file_id=None,
             is_active=True,
         )

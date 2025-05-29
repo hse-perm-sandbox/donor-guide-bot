@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+import os
 
 CONN_STR_TEMPLATE = "postgresql+psycopg2://{user}:{password}@{host}:{port}/{dbname}"
 
@@ -15,6 +16,7 @@ class Settings(BaseSettings):
     POSTGRES_USER: str = "postgres"
     POSTGRES_PASSWORD: str = "postgres"
     POSTGRES_DB: str = "postgres"
+    ASSETS_DIR: str = os.path.join(os.getcwd(), "src/assets")
 
     @property
     def DATABASE_URL(self) -> str:

@@ -2,7 +2,9 @@ import logging
 from telebot import types
 from src.database.database import get_session
 from src.database.repositories.folder import FolderRepository
-from src.database.repositories.question import QuestionRepository 
+from src.database.repositories.question import QuestionRepository
+import os
+from src.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -10,8 +12,9 @@ def _send_photo_from_path_and_update_db(bot, session, question, chat_id, caption
 
     try:
         logger.info(f"Отправка фото из файла: {image_path} для вопроса ID {question.id}")
+        absolute_image_path = os.path.join(settings.ASSETS_DIR, image_path)
 
-        with open(image_path, 'rb') as photo_file:
+        with open(absolute_image_path, 'rb') as photo_file:
             sent_message = bot.send_photo(
                 chat_id=chat_id,
                 photo=photo_file,
