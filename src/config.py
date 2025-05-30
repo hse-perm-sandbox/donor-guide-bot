@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     POSTGRES_USER: str = "postgres"
     POSTGRES_PASSWORD: str = "postgres"
     POSTGRES_DB: str = "postgres"
-    ASSETS_DIR: str = os.path.join(os.getcwd(), "src/assets")
+    ASSETS_DIR: str = "assets"
 
     @property
     def DATABASE_URL(self) -> str:
