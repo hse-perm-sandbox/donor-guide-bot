@@ -10,7 +10,7 @@ COPY --from=base /app /app
 WORKDIR /app
 COPY ./src /app/src
 COPY ./migration /app/migration
-# COPY ./assets /app/assets
+COPY ./assets /app/assets
 ENV PYTHONPATH=/app
 ENV PATH="/app/.venv/bin:$PATH"
 
