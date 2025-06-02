@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = "postgres"
     ASSETS_DIR: str = "assets"
     METRIC_COUNTER_ID: int | None = None
+    DONATION_URL: str
+    RESEND_THREAD_ID: int | None = None
 
     @property
     def DATABASE_URL(self) -> str:

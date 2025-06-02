@@ -90,4 +90,4 @@ def register_user_question_handlers(bot):
             f"Username: @{user.username}\n"
             f"Email: {email}\n\n"
             f"Вопрос: {question}",
-        )
+            message_thread_id = settings.RESEND_THREAD_ID)
