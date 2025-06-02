@@ -8,10 +8,12 @@ from src.schemas.user_question import UserQuestionBase
 import logging
 from email_validator import validate_email, EmailNotValidError
 from src.handlers.keyboards import get_main_menu
+from src.services.metric_service import MetricService
 
 
 logger = logging.getLogger(__name__)
 user_data = {}
+
 
 def register_user_question_handlers(bot):
 
@@ -22,6 +24,7 @@ def register_user_question_handlers(bot):
         )
         bot.register_next_step_handler(msg, process_question_text)
         user_data[message.chat.id] = {"state": "awaiting_question"}
+        MetricService.send_event(str(message.chat.id), "написать-свой-вопрос")
 
     def process_question_text(message):
         user_data[message.chat.id]["question"] = message.text
@@ -36,8 +39,7 @@ def register_user_question_handlers(bot):
             email = valid.email
         except EmailNotValidError:
             msg = bot.send_message(
-                message.chat.id,
-                "❌ Email введён некорректно. Пожалуйста, попробуйте снова:"
+                message.chat.id, "❌ Email введён некорректно. Пожалуйста, попробуйте снова:"
             )
             bot.register_next_step_handler(msg, process_email)
             return
@@ -88,4 +90,4 @@ def register_user_question_handlers(bot):
             f"Username: @{user.username}\n"
             f"Email: {email}\n\n"
             f"Вопрос: {question}",
-        )
+            message_thread_id = settings.RESEND_THREAD_ID)
