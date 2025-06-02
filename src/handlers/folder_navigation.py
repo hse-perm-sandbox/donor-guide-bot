@@ -87,48 +87,47 @@ def register_folder_navigation_handlers(bot):
             folder = folder_repo.get_by_id(folder_id)
             MetricService.send_event(str(call.message.chat.id), folder.folder_name)
 
-        if subfolders:
-            show_folder_level(call.message.chat.id, folder_id, call.message.message_id)
-        else:
-            questions = question_repo.get_by_folder(folder_id)
-            if questions:
-                show_question_list(
-                    call.message.chat.id, questions, call.message.message_id, folder_id
-                )
+        subfolders = folder_repo.get_by_parent(folder_id)
+        questions = question_repo.get_by_folder(folder_id)
+        keyboard = types.InlineKeyboardMarkup(row_width=1)
+
+        for folder in subfolders:
+            keyboard.add(types.InlineKeyboardButton(
+                text=folder.folder_name,
+                callback_data=f"folder_{folder.id}"
+            ))
+
+        for q in questions:
+            q_text = str(q.question)[:45] + ("..." if len(str(q.question)) > 45 else "")
+            keyboard.add(types.InlineKeyboardButton(
+                text=q_text,
+                callback_data=f"question_{q.id}"
+            ))
+
+        if folder_id is not None:
+            current_folder_obj = folder_repo.get_by_id(folder_id)
+            if current_folder_obj and current_folder_obj.parent_id is not None:
+                back_target_id = current_folder_obj.parent_id
+                keyboard.add(types.InlineKeyboardButton(
+                    text="⬅ Назад", callback_data=f"folder_{back_target_id}"
+                ))
             else:
-                keyboard = types.InlineKeyboardMarkup()
-                current_folder_obj = folder_repo.get_by_id(folder_id)
+                keyboard.add(types.InlineKeyboardButton(
+                    text="⬅ Назад к категориям", callback_data="folder_root"
+                ))
 
-                if current_folder_obj and current_folder_obj.parent_id is not None:
-                    back_target_id = current_folder_obj.parent_id
-                    keyboard.add(
-                        types.InlineKeyboardButton(
-                            text="⬅ Назад", callback_data=f"folder_{back_target_id}"
-                        )
-                    )
-                else:
-                    keyboard.add(
-                        types.InlineKeyboardButton(
-                            text="⬅ Назад к категориям", callback_data="folder_root"
-                        )
-                    )
-
-                try:
-                    bot.edit_message_text(
-                        chat_id=call.message.chat.id,
-                        message_id=call.message.message_id,
-                        text="🔍 В этой категории пока нет вопросов.",
-                        reply_markup=keyboard,
-                    )
-                except Exception as e_edit:
-                    logger.warning(
-                        f"Ошибка редактирования сообщения в folder_callback_handler: {e_edit}. Отправка нового сообщения."
-                    )
-                    bot.send_message(
-                        call.message.chat.id,
-                        "🔍 В этой категории пока нет вопросов.",
-                        reply_markup=keyboard,
-                    )
+        text = "📂 Выберите раздел или вопрос:" if subfolders or questions else "🔍 В этой категории пока нет вопросов."
+        try:
+            bot.edit_message_text(
+                chat_id=call.message.chat.id,
+                message_id=call.message.message_id,
+                text=text,
+                reply_markup=keyboard
+            )
+        except Exception as e_edit:
+            logger.warning(
+                f"Ошибка редактирования сообщения в folder_callback_handler: {e_edit}. Отправка нового сообщения.")
+            bot.send_message(call.message.chat.id, text, reply_markup=keyboard)
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith("question_"))
     def question_callback_handler(call):
