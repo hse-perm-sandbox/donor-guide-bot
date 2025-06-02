@@ -63,6 +63,7 @@ jobs:
               -e POSTGRES_PORT=${{ secrets.SANDBOX_DB_PORT }} \
               -e TELEGRAM_TOKEN=${{ secrets.TELEGRAM_TOKEN }} \
               -e RESEND_CHAT_ID=${{ secrets.RESEND_CHAT_ID }} \
+              -e METRIC_COUNTER_ID=${{ secrets.METRIC_COUNTER_ID }} \
               -e LOG_LEVEL=${{ vars.LOG_LEVEL }} \
               --restart=always \
               --name ${{ env.TEST_CONTAINER_NAME }} \
