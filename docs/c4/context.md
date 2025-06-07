@@ -11,18 +11,18 @@ C4Context
     }
 
     Person(Донор, "Потенциальный донор")
-    System_Ext(Реестр, "Национальный реестр доноров")
     System_Ext(Telegram, "Платформа Telegram")
 
-    Rel(Донор, DonorBot, "Задает вопросы через бота")
-    Rel(Сотрудник, DonorBot, "Редактирует ответы")
-    Rel(DonorBot, Реестр, "Предоставляет ссылки для регистрации")
+    Rel(Донор, Telegram, "Задает вопросы через бота")
+    Rel(Сотрудник, Telegram, "Получает вопросы от пользователей")
     Rel(DonorBot, Telegram, "Работает внутри мессенджера")
+    Rel(Telegram, DonorBot, "Переадресует запросы")
 
-    UpdateRelStyle(Донор, DonorBot, $offsetY="-80", $offsetX="-100")
-    UpdateRelStyle(Сотрудник, DonorBot, $offsetY="40", $offsetX="-100")
-    UpdateRelStyle(DonorBot, Реестр, $offsetY="-20", $offsetX="-100")
-    UpdateRelStyle(DonorBot, Telegram, $textColor="blue", $lineColor="blue", $offsetY="10")
+
+    UpdateRelStyle(Донор, Telegram, $offsetY="20", $offsetX="-40")
+    UpdateRelStyle(Сотрудник, Telegram, $offsetY="100", $offsetX="40")
+    UpdateRelStyle(DonorBot, Telegram, $textColor="blue", $lineColor="blue", $offsetY="10", $offsetX="-220")
+    UpdateRelStyle(Telegram, DonorBot, $offsetY="10", $offsetX="20")
 ```
 
 ## Описание компонентов:
@@ -31,10 +31,11 @@ C4Context
 3. Потенциальный донор. Основной пользователь, взаимодействующий с ботом для получения информации.
 
 ## Внешние системы:
-1. Национальный реестр доноров — предоставляет данные для регистрации.
-2. Telegram — платформа для работы бота.
+1. Telegram — платформа для работы бота, передаёт запросы от пользователей в DonorGuide и отображает ответы.
 
 ## Взаимодействия:
-1. Пользователи задают вопросы через бота.
-2. Бот предоставляет ответы из базы знаний или ссылки на внешние ресурсы.
-3. Сотрудник фонда обновляет контент бота.
+1. Потенциальные доноры задают вопросы через Telegram-бота.
+2. Telegram пересылает сообщения в DonorGuide.
+3. DonorGuide отвечает на частые вопросы, используя базу знаний.
+4. Индивидуальные вопросы автоматически пересылаются сотрудникам фонда.
+
