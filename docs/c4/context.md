@@ -12,17 +12,22 @@ C4Context
 
     Person(Донор, "Потенциальный донор")
     System_Ext(Telegram, "Платформа Telegram")
+    System_Ext(Metrica, "Яндекс Метрика", "Система аналитики")
 
     Rel(Донор, Telegram, "Задает вопросы через бота")
     Rel(Сотрудник, Telegram, "Получает вопросы от пользователей")
     Rel(DonorBot, Telegram, "Работает внутри мессенджера")
     Rel(Telegram, DonorBot, "Переадресует запросы")
+    Rel(DonorBot, Metrica, "Отправляет события посещения")
+    Rel(Сотрудник, Metrica, "Просматривает аналитику")
 
 
     UpdateRelStyle(Донор, Telegram, $offsetY="20", $offsetX="-40")
     UpdateRelStyle(Сотрудник, Telegram, $offsetY="100", $offsetX="40")
     UpdateRelStyle(DonorBot, Telegram, $textColor="blue", $lineColor="blue", $offsetY="10", $offsetX="-220")
     UpdateRelStyle(Telegram, DonorBot, $offsetY="10", $offsetX="20")
+    UpdateRelStyle(DonorBot, Metrica, $textColor="green", $lineColor="green", $offsetY="-20")
+    UpdateRelStyle(Сотрудник, Metrica, $textColor="blue", $lineColor="blue", $offsetY="-60", $offsetX="30")
 ```
 
 ## Описание компонентов:
@@ -32,10 +37,11 @@ C4Context
 
 ## Внешние системы:
 1. Telegram — платформа для работы бота, передаёт запросы от пользователей в DonorGuide и отображает ответы.
+2. Яндекс Метрика — система аналитики, в которую бот отправляет события взаимодействия.
 
 ## Взаимодействия:
-1. Потенциальные доноры задают вопросы через Telegram-бота.
-2. Telegram пересылает сообщения в DonorGuide.
-3. DonorGuide отвечает на частые вопросы, используя базу знаний.
-4. Индивидуальные вопросы автоматически пересылаются сотрудникам фонда.
-
+1. Донор задаёт вопрос через Telegram.
+2. Telegram передаёт запрос в DonorGuide.
+3. DonorGuide отправляет ответ или пересылает вопрос сотруднику.
+4. DonorGuide фиксирует события в Яндекс Метрике.
+5. Сотрудник анализирует поведение пользователей через интерфейс Яндекс Метрики.
