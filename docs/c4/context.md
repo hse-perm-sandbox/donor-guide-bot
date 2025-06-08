@@ -6,7 +6,7 @@ C4Context
     title Система информирования о донорстве
 
     Enterprise_Boundary(Фонд, "Благотворительный фонд 'Advita'") {
-        System(DonorBot, "Telegram-бот DonorGuide", "Отвечает на вопросы о донорстве")
+        System(DonorBot, "Telegram-бот DonorGuide", "#160;Отвечает на вопросы о донорстве")
         Person(Сотрудник, "Сотрудник фонда", "Обновляет базу знаний")
     }
 
@@ -15,19 +15,17 @@ C4Context
     System_Ext(Metrica, "Яндекс Метрика", "Система аналитики")
 
     Rel(Донор, Telegram, "Задает вопросы через бота")
-    Rel(Сотрудник, Telegram, "Получает вопросы от пользователей")
-    Rel(DonorBot, Telegram, "Работает внутри мессенджера")
-    Rel(Telegram, DonorBot, "Переадресует запросы")
-    Rel(DonorBot, Metrica, "Отправляет события посещения")
-    Rel(Сотрудник, Metrica, "Просматривает аналитику")
+    Rel(Сотрудник, Telegram, "Получает вопросы<br>от пользователей")
+    Rel(DonorBot, Telegram, "Получает запросы<br>Отправляет сообщения")
+    Rel(DonorBot, Metrica, "Отправляет события<br>посещения")
+    Rel(Сотрудник, Metrica, "Просматривает<br>аналитику")
 
 
-    UpdateRelStyle(Донор, Telegram, $offsetY="20", $offsetX="-40")
-    UpdateRelStyle(Сотрудник, Telegram, $offsetY="100", $offsetX="40")
-    UpdateRelStyle(DonorBot, Telegram, $textColor="blue", $lineColor="blue", $offsetY="10", $offsetX="-220")
-    UpdateRelStyle(Telegram, DonorBot, $offsetY="10", $offsetX="20")
-    UpdateRelStyle(DonorBot, Metrica, $textColor="green", $lineColor="green", $offsetY="-20")
-    UpdateRelStyle(Сотрудник, Metrica, $textColor="blue", $lineColor="blue", $offsetY="-60", $offsetX="30")
+    UpdateRelStyle(Донор, Telegram, $offsetY="-90", $offsetX="-60")
+    UpdateRelStyle(Сотрудник, Telegram, $offsetY="100", $offsetX="-40")
+    UpdateRelStyle(DonorBot, Telegram, $offsetY="10", $offsetX="-220")
+    UpdateRelStyle(DonorBot, Metrica, $offsetY="-10", $offsetX="-150")
+    UpdateRelStyle(Сотрудник, Metrica, $offsetY="85", $offsetX="-10")
 ```
 
 ## Описание компонентов:
