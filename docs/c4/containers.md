@@ -11,12 +11,16 @@ C4Container
     }
     
     System_Ext(telegram, "Telegram API", "Официальное API Telegram")
+    System_Ext(metrica, "Яндекс Метрика", "Система аналитики")
+
 
     Rel(bot, db, "Читает ответы/Обновляет лог вопросов", "SQL")
     Rel(bot, telegram, "Отправка/получение сообщений", "HTTPS")
+     Rel(bot, metrica, "Отправляет события", "HTTPS")
 
-    UpdateRelStyle(bot, telegram, $offsetY="-40")
+    UpdateRelStyle(bot, telegram, $offsetY="-40", $offsetX="-200")
     UpdateRelStyle(bot, db, $offsetY="50")
+    UpdateRelStyle(bot, metrica, $offsetY="-40", $offsetX="20")
     UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="1")
 ```
 
@@ -30,3 +34,4 @@ C4Container
 
 ## Внешние системы:
 1. Telegram — платформа для работы бота. Обеспечивает коммуникацию с пользователями.
+2. Яндекс Метрика – система аналитики. Получает события для аналитики поведения пользователей.
