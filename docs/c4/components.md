@@ -6,13 +6,17 @@ C4Component
     title Диаграмма компонентов Telegram-бота DonorGuide 
 
     System_Boundary(ext, "Внешние системы") {
-        System_Ext(telegram, "Telegram API", "Официальное API Telegram")
         System_Ext(metrica, "Яндекс Метрика", "Система аналитики")
+        System_Ext(telegram, "Telegram API", "Официальное API Telegram")
     UpdateLayoutConfig($c4BoundaryInRow="1")
     }
     
     System_Boundary(boundary, "Система DonorGuide") {
         Container_Boundary(bot_container, "Контейнер: Telegram-бот") {
+
+            Boundary(services, "Сервисы") {
+                Component(metric_service, "MetricService", "Python", "Отправляет события в Яндекс Метрику")
+            }
 
             Boundary(handlers, "Обработчики сообщений") {
                 Component(user_question, "UserCallbackHandler", "Python", "Обрабатывает вопросы пользователей")
@@ -41,7 +45,7 @@ C4Component
     Rel(user_question_repo, db, "Чтение/запись", "SQL")
     UpdateRelStyle(user_question_repo, db, $offsetX="-70")
     Rel(user_question, telegram, "Отправка/получение сообщений", "HTTPS")
-    UpdateRelStyle(user_question, telegram, $offsetX="-50", $offsetY="-40")
+    UpdateRelStyle(user_question, telegram, $offsetX="-270", $offsetY="-20")
 
     Rel(folder_handler, telegram, "Обрабатывает выбор папки", "HTTPS")
     UpdateRelStyle(folder_handler, telegram, $offsetX="-50", $offsetY="-30")
@@ -50,18 +54,20 @@ C4Component
     Rel(folder_handler, question_repo, "Получает вопросы")
     
     Rel(question_handler, telegram, "Отправляет ответ", "HTTPS")
-    UpdateRelStyle(question_handler, telegram, $offsetX="-20", $offsetY="-50")
+    UpdateRelStyle(question_handler, telegram, $offsetX="-120", $offsetY="-50")
     Rel(question_handler, question_repo, "Получает вопрос")
     UpdateRelStyle(question_handler, question_repo, $offsetX="0", $offsetY="-20")
     
-    Rel(folder_handler, metrica, "Отправляет событие", "HTTPS")
-    UpdateRelStyle(folder_handler, metrica, $textColor="blue", $lineColor="blue", $offsetX="-50", $offsetY="0")
-    Rel(user_question, metrica, "Отправляет событие", "HTTPS")
-    UpdateRelStyle(user_question, metrica, $textColor="blue", $lineColor="blue",  $offsetY="10")
+    Rel(folder_handler, metric_service, "Отправляет событие")
+    UpdateRelStyle(folder_handler, metric_service, $offsetX="-50", $offsetY="0")
+    Rel(user_question, metric_service, "Отправляет событие")
+    UpdateRelStyle(user_question, metric_service, $offsetX="-50",  $offsetY="-20")
     Rel(question_repo, db, "Чтение вопросов", "SQL")
     Rel(folder_repo, db, "Чтение папок", "SQL")
     UpdateRelStyle(question_repo, db, $offsetY="0", $offsetX="-90")
     UpdateRelStyle(folder_repo, db, $offsetY="-40", $offsetX="-60")
+    Rel(metric_service, metrica, "Передаёт событие", "HTTPS")
+    UpdateRelStyle(metric_service, metrica, $offsetY="-60", $offsetX="-70")
 
 
 
@@ -73,17 +79,21 @@ C4Component
 Диаграмма отображает внутреннюю структуру системы  на уровне компонентов. Система разделена на два основных контейнера:
 1. Контейнер Telegram-бота содержит два логических блока:
 
-    - Обработчики (handlers) — принимают callback-запросы и маршрутизируют их:
+    - Обработчики — принимают callback-запросы и маршрутизируют их:
         - UserCallbackHandler: реагирует на вопросы пользователей;
         - FolderCallbackHandler: обрабатывает выбор папки и отображает вложения;
         - QuestionCallbackHandler: показывает ответ на выбранный вопрос.
 
-    - Репозитории (repos) — получают и сохраняют данные в базу:
+    - Репозитории — получают и сохраняют данные в базу:
 
         - UserRepository: сохраняет и извлекает информацию о пользователях Telegram;
         - UserQuestionRepository: регистрирует вопросы, которые пользователи задают вручную;
         - QuestionRepository: предоставляет доступ к базе часто задаваемых вопросов и их ответов;
         - FolderRepository: управляет иерархией категорий и подкатегорий вопросов.
+    - Сервисы — вспомогательные компоненты, реализующие бизнес-логику:
+        - MetricService: отвечает за отправку событий взаимодействия пользователей в Яндекс Метрику. Обработчики вызывают его методы напрямую.
+
+
 
 2. Контейнер базы данных
     - PostgreSQL — централизованное хранилище всех данных пользователей, вопросов и структуры папок.
