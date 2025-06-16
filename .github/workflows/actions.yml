@@ -1,0 +1,73 @@
+name: "CI CD actions"
+on:
+  push:
+    branches:
+      - test
+    paths-ignore:
+      - '**.md'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ghcr.io/${{ github.repository }}:${{ github.ref_name }} 
+  TEST_CONTAINER_NAME: donor-guide-bot-test
+
+jobs:
+  build:
+    name: Docker image build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Log in to the Container registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
+        with:
+          context: .
+          push: true
+          tags: ${{ env.IMAGE_NAME }}
+  deploy-test:
+    name: Test deploy
+    environment: test
+    runs-on: ubuntu-latest
+    needs: build
+    if: needs.build.result == 'success'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SANDBOX_HOST }}
+          username: ${{ secrets.SANDBOX_USER }}
+          key: ${{ secrets.SANDBOX_KEY }}
+          port: ${{ secrets.SANDBOX_PORT }}
+          script: |
+            docker logout;
+            docker pull ${{ env.IMAGE_NAME }};
+            docker rm -f ${{ env.TEST_CONTAINER_NAME }} || true;
+            docker run -d \
+              -e POSTGRES_USER=${{ secrets.POSTGRES_USER }} \
+              -e POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
+              -e POSTGRES_DB=${{ secrets.POSTGRES_DB }} \
+              -e POSTGRES_HOST=${{ secrets.SANDBOX_DB_HOST }} \
+              -e POSTGRES_PORT=${{ secrets.SANDBOX_DB_PORT }} \
+              -e TELEGRAM_TOKEN=${{ secrets.TELEGRAM_TOKEN }} \
+              -e RESEND_CHAT_ID=${{ secrets.RESEND_CHAT_ID }} \
+              -e METRIC_COUNTER_ID=${{ secrets.METRIC_COUNTER_ID }} \
+              -e LOG_LEVEL=${{ vars.LOG_LEVEL }} \
+              --restart=always \
+              --name ${{ env.TEST_CONTAINER_NAME }} \
+              ${{ env.IMAGE_NAME }};
+            docker exec ${{ env.TEST_CONTAINER_NAME }} bash -c \
+              "cd /app && \
+              .venv/bin/alembic upgrade head"
