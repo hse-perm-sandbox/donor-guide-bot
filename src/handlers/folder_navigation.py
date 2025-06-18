@@ -78,11 +78,10 @@ def register_folder_navigation_handlers(bot):
         show_folder_level(chat_id=message.chat.id, parent_id=None, message_id=None)
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith("folder_"))
-    def folder_callback_handler(call):
+    def folder_callback_handler(call, force_new=False):
         folder_id_str = call.data.split("_")[1]
         folder_id = None if folder_id_str == "root" else int(folder_id_str)
 
-        subfolders = folder_repo.get_by_parent(folder_id)
         if folder_id_str != "root":
             folder = folder_repo.get_by_id(folder_id)
             MetricService.send_event(str(call.message.chat.id), folder.folder_name)
@@ -113,21 +112,24 @@ def register_folder_navigation_handlers(bot):
                 ))
             else:
                 keyboard.add(types.InlineKeyboardButton(
-                    text="⬅ Назад к категориям", callback_data="folder_root"
+                    text="⬅ Назад", callback_data="folder_root"
                 ))
 
         text = "📂 Выберите раздел или вопрос:" if subfolders or questions else "🔍 В этой категории пока нет вопросов."
-        try:
-            bot.edit_message_text(
-                chat_id=call.message.chat.id,
-                message_id=call.message.message_id,
-                text=text,
-                reply_markup=keyboard
-            )
-        except Exception as e_edit:
-            logger.warning(
-                f"Ошибка редактирования сообщения в folder_callback_handler: {e_edit}. Отправка нового сообщения.")
+        if force_new:
             bot.send_message(call.message.chat.id, text, reply_markup=keyboard)
+        else:
+            try:
+                bot.edit_message_text(
+                    chat_id=call.message.chat.id,
+                    message_id=call.message.message_id,
+                    text=text,
+                    reply_markup=keyboard
+                )
+            except Exception as e_edit:
+                logger.warning(
+                    f"Ошибка редактирования сообщения в folder_callback_handler: {e_edit}. Отправка нового сообщения.")
+                bot.send_message(call.message.chat.id, text, reply_markup=keyboard)
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith("question_"))
     def question_callback_handler(call):
@@ -167,7 +169,6 @@ def register_folder_navigation_handlers(bot):
                 logger.error(
                     f"Ошибка редактирования сообщения для текстового ответа (вопрос ID {question.id}): {e_edit}. Попытка отправить как новое сообщение."
                 )
-
                 bot.send_message(
                     call.message.chat.id, text_to_send, parse_mode="HTML", reply_markup=keyboard
                 )
@@ -249,8 +250,7 @@ def register_folder_navigation_handlers(bot):
                 f"Ошибка удаления сообщения в back_to_folder (msg_id: {call.message.message_id}): {e_delete}"
             )
 
-        questions = question_repo.get_by_folder(folder_id)
-        show_question_list(call.message.chat.id, questions, message_id=None, folder_id=folder_id)
+        folder_callback_handler(call, force_new=True)
 
     def show_folder_level(chat_id: int, parent_id: int | None, message_id: int | None = None):
 
@@ -296,62 +296,3 @@ def register_folder_navigation_handlers(bot):
                 bot.send_message(chat_id, text, reply_markup=keyboard)
         else:
             bot.send_message(chat_id, text, reply_markup=keyboard)
-
-    def show_question_list(chat_id: int, questions: list, message_id: int | None, folder_id: int):
-        from typing import Optional
-
-        message_id_typed: Optional[int] = message_id
-
-        keyboard = types.InlineKeyboardMarkup(row_width=1)
-
-        text_to_display = "📖 Выберите вопрос:"
-
-        if not questions:
-            text_to_display = "🔍 В этой папке пока нет вопросов."
-        else:
-            for q in questions:
-
-                question_text_for_button = str(q.question)[:45] + (
-                    "..." if len(str(q.question)) > 45 else ""
-                )
-                keyboard.add(
-                    types.InlineKeyboardButton(
-                        text=question_text_for_button, callback_data=f"question_{q.id}"
-                    )
-                )
-
-        current_folder_obj = folder_repo.get_by_id(folder_id)
-        back_target_id_str = "root"
-        if current_folder_obj:
-            if current_folder_obj.parent_id is not None:
-                back_target_id_str = str(current_folder_obj.parent_id)
-
-            keyboard.add(
-                types.InlineKeyboardButton(
-                    text="⬅ Назад к разделам", callback_data=f"folder_{back_target_id_str}"
-                )
-            )
-        else:
-
-            logger.warning(
-                f"Папка с ID {folder_id} не найдена в show_question_list. Кнопка 'Назад' ведет в корень."
-            )
-            keyboard.add(
-                types.InlineKeyboardButton(text="⬅ Назад к категориям", callback_data="folder_root")
-            )
-
-        if message_id_typed:
-            try:
-                bot.edit_message_text(
-                    chat_id=chat_id,
-                    message_id=message_id_typed,
-                    text=text_to_display,
-                    reply_markup=keyboard,
-                )
-            except Exception as e:
-                logger.warning(
-                    f"Ошибка редактирования в show_question_list (msg_id: {message_id_typed}), отправка нового: {e}"
-                )
-                bot.send_message(chat_id, text_to_display, reply_markup=keyboard)
-        else:
-            bot.send_message(chat_id, text_to_display, reply_markup=keyboard)
