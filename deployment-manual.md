@@ -40,6 +40,7 @@ export POSTGRES_PASSWORD=postgres
 export POSTGRES_DB=donor-guide-db
 export POSTGRES_HOST=postgres
 export POSTGRES_PORT=5432
+export DONATION_URL=https://set.actual.link.here
 ```
 
 >  Пояснение:
@@ -52,6 +53,7 @@ export POSTGRES_PORT=5432
 > - `POSTGRES_DB` — название базы данных.
 > - `POSTGRES_HOST` — адрес хоста, на котором запущена база данных, если СУБД запущена в docker-контейнере и контейнеры объединены в одной сети, указать название контейнера.
 > - `POSTGRES_PORT` — порт, на котором запущена СУБД, по умолчанию 5432.
+> - `DONATION_URL` — ссылка на страницу для пожертвований.
 
 В целях безопасности задайте уникальное имя пользователя и сложный случайно сгенерированный пароль для доступа к базе данных.
 
@@ -101,6 +103,7 @@ docker run -d \
   -e POSTGRES_DB=$POSTGRES_DB \
   -e POSTGRES_HOST=$POSTGRES_HOST \
   -e POSTGRES_PORT=$POSTGRES_PORT \
+  -e DONATION_URL=$DONATION_URL \
   --name donor-guide-bot \
   --network donor-guide-network \
   ghcr.io/hse-perm-sandbox/donor-guide-bot:v1.0.0
