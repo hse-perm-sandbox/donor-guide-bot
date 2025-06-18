@@ -67,6 +67,7 @@ jobs:
               -e RESEND_CHAT_ID=${{ secrets.RESEND_CHAT_ID }} \
               -e METRIC_COUNTER_ID=${{ secrets.METRIC_COUNTER_ID }} \
               -e LOG_LEVEL=${{ vars.LOG_LEVEL }} \
+              -e DONATION_URL=${{ vars.DONATION_URL }} \
               --restart=always \
               --name ${{ env.TEST_CONTAINER_NAME }} \
               ${{ env.IMAGE_NAME }};
