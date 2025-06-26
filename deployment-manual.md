@@ -38,7 +38,7 @@ export METRIC_COUNTER_ID=your_metrica_counter_id
 export POSTGRES_USER=postgres
 export POSTGRES_PASSWORD=postgres
 export POSTGRES_DB=donor-guide-db
-export POSTGRES_HOST=postgres
+export POSTGRES_HOST=donor-guide-db
 export POSTGRES_PORT=5432
 export DONATION_URL=https://set.actual.link.here
 ```
@@ -78,6 +78,7 @@ docker run -d \
   -e POSTGRES_DB=$POSTGRES_DB \
   --network donor-guide-network \
   --name donor-guide-db \
+  --restart=always \
   postgres:16.0-bullseye
 ```
 ---
@@ -106,6 +107,7 @@ docker run -d \
   -e DONATION_URL=$DONATION_URL \
   --name donor-guide-bot \
   --network donor-guide-network \
+  --restart=always \
   ghcr.io/hse-perm-sandbox/donor-guide-bot:v1.0.0
 ```
 ---
