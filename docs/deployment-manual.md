@@ -6,7 +6,7 @@
 Проект разработан в рамках курсовой работы и поставляется в виде готового Docker-образа.
 
 Docker-образ опубликован в [GitHub Container Registry](https://github.com/hse-perm-sandbox/donor-guide-bot/pkgs/container/donor-guide-bot):  
-`ghcr.io/hse-perm-sandbox/donor-guide-bot:v1.0.0`
+`ghcr.io/hse-perm-sandbox/donor-guide-bot:v1.0.1`
 
 ---
 
@@ -88,7 +88,7 @@ docker run -d \
 Скачайте Docker-образ:
 
 ```bash
-docker pull ghcr.io/hse-perm-sandbox/donor-guide-bot:v1.0.0
+docker pull ghcr.io/hse-perm-sandbox/donor-guide-bot:v1.0.1
 ```
 
 Запустите основной контейнер с ботом:
@@ -108,7 +108,7 @@ docker run -d \
   --name donor-guide-bot \
   --network donor-guide-network \
   --restart=always \
-  ghcr.io/hse-perm-sandbox/donor-guide-bot:v1.0.0
+  ghcr.io/hse-perm-sandbox/donor-guide-bot:v1.0.1
 ```
 ---
 
@@ -169,5 +169,5 @@ docker network remove donor-guide-network
 Удалить образ:
 
 ```bash
-docker rmi ghcr.io/hse-perm-sandbox/donor-guide-bot:v1.0.0
+docker rmi ghcr.io/hse-perm-sandbox/donor-guide-bot:v1.0.1
 ```
