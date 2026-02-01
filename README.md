@@ -228,3 +228,4 @@ docker compose -f docker-compose.local.yml down -v
 ```bash
 python -m src.database.seeds.initial_data
 ```
+
